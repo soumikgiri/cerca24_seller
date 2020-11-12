@@ -1,0 +1,418 @@
+<!-- <form role="form" #frm="ngForm" (submit)="submit(frm)" novalidate> -->
+<div class="container">
+  <div class="panel panel-default">
+    <div class="panel-heading resume-heading">
+      <div class="row">
+        <div class="col-xs-12 col-sm-3">
+          <figure>
+            <img class="img-circle img-responsive" [src]="avatarUrl | checkPhoto" (click)="swipe(avatarUrl)" />
+          </figure>
+        </div>
+        <div class="col-xs-12 col-sm-9">
+          <ul class="list-group">
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col-md-2">
+                  Order
+                </div>
+                <div class="col-md-10">#{{ order?.trackingCode }}</div>
+              </div>
+            </li>
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col-md-2">
+                  Created at:
+                </div>
+                <div class="col-md-4">
+                  {{ order.createdAt | date: 'short' }}
+                </div>
+                <!-- <div class="col-md-6">
+                            IP: {{order.userIP}}
+                          </div> -->
+              </div>
+            </li>
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col-md-2">
+                  Status:
+                </div>
+                <div class="col-md-4">
+                  <select
+                    name="status"
+                    (change)="query()"
+                    [(ngModel)]="order.status"
+                    #status="ngModel"
+                    class="form-control"
+                  >
+                    <option value="completed">Completed</option>
+                    <option value="shipping">Shipping</option>
+                    <option value="pending">Pending</option>
+                    <option value="progressing">Ready To Pick Up</option>
+                    <option value="refunded">Refunded</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+            </li>
+            <!-- <li class="list-group-item" *ngIf="order.status === 'progressing'">
+              <div class="row">
+                <div class="col-md-3">
+                  Pickup Address:
+                </div>
+                <div class="col-md-6" *ngIf="isOption">
+                  <select class="form-control" (ngModelChange)="query($event)" [(ngModel)]="order.pickUpAddressObj"
+                    name="pickUpAddress" #pickupAddress="ngModel">
+                    <option *ngFor="let addressItem of order.shopPickupAddress" [ngValue]="addressItem">
+                      {{addressItem?.street}}, {{addressItem?.area}}, {{addressItem?.city}}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-9" *ngIf="!isOption && order.pickUpAddressObj">
+                  <span>
+                    {{order.pickUpAddressObj?.street}}, {{order.pickUpAddressObj?.area}},
+                    {{order.pickUpAddressObj?.city}}
+                  </span>
+                  &nbsp;
+                  <a (click)="updatePickupAddress()"><i class="fa fa-pencil"></i></a>
+                </div>
+              </div>
+            </li> -->
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col-md-3">
+                  Payment Method:
+                </div>
+                <div class="col-md-9">
+                  <span class="badge badge-warning" *ngIf="order.paymentMethod === 'cod'">COD</span>
+                  <span class="badge badge-warning" *ngIf="order.paymentMethod === 'paypal'">PayPal</span>
+                  <span class="badge badge-warning" *ngIf="order.paymentMethod === 'stripe'">Credit Card</span>
+                  <!-- <span class="badge badge-warning" *ngIf="order.paymentMethod === 'cybersource'">Card</span>
+                  <span class="badge badge-warning" *ngIf="order.paymentMethod === 'mtn'">Mobile Money</span> -->
+                </div>
+              </div>
+            </li>
+            <li class="list-group-item">
+              <div class="row">
+                <div class="col-md-6">Quantity(s): {{ order?.quantity }}</div>
+                <!-- <div class="col-md-6">
+                            Shipping Price: {{order?.shippingPrice | currency:'ZMW '}}
+                          </div> -->
+                <div class="col-md-6">Taxes Price: {{ order?.taxPrice | currency: 'ZMW ' }}</div>
+                <div class="col-md-6">
+                  Total Price:
+                  <strong
+                    ><span class="label label-danger">{{ order?.totalPrice | currency: 'ZMW ' }}</span></strong
+                  >
+                </div>
+                <div class="col-md-6">
+                  Service Charge(Include VAT): {{ order?.commissionRate * 100 }}% -
+                  {{ order?.commission | currency: 'ZMW
+                  ' }}
+                </div>
+                <div class="col-md-6">
+                  Amount to be received:
+                  <strong
+                    ><span class="label label-success">{{ order?.balance | currency: 'ZMW ' }}</span></strong
+                  >
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <h3>Product details</h3>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Product name:
+            </div>
+            <div class="col-md-6">
+              {{ order.productDetails?.name }}
+            </div>
+            <div class="col-md-1">
+              Type:
+            </div>
+            <div class="col-md-3">
+              <span class="label label-primary" *ngIf="order.productDetails?.type === 'physical'">Physical</span>
+              <span class="label label-danger" *ngIf="order.productDetails?.type === 'digital'">Digital</span>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Variant:
+            </div>
+            <div class="col-md-10">
+              <span *ngIf="order.variantDetails">
+                <span *ngFor="let option of order.variantDetails.options">
+                  {{ option.displayText || option.optionKey }}: {{ option.value }}
+                </span>
+              </span>
+              <span class="text-muted" [hidden]="order.variantDetails">N/A</span>
+            </div>
+          </div>
+        </li>
+        <li
+          class="list-group-item"
+          *ngIf="order.productDetails && order.productDetails.weight && order.productDetails.weightType"
+        >
+          <div class="row">
+            <div class="col-md-2">
+              Weight:
+            </div>
+            <div class="col-md-4">
+              <span *ngIf="order.productDetails.weight && order.productDetails.weightType">
+                {{ order.productDetails.weight }} {{ order.productDetails.weightType }}
+              </span>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item" *ngIf="order.productDetails && order.productDetails.volume">
+          <div class="row">
+            <div class="col-md-2">
+              Volume:
+            </div>
+            <div class="col-md-4">
+              <span *ngIf="order.productDetails.volume">{{ order.productDetails.volume }} &#13221;</span>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Price:
+            </div>
+            <div class="col-md-10">
+              <span *ngIf="order.variantDetails">{{ order.variantDetails?.price | currency: 'ZMW ' }}</span>
+              <span *ngIf="!order.variantDetails && order.productDetails">{{
+                order.productDetails?.price | currency: 'ZMW '
+              }}</span>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Sale Price:
+            </div>
+            <div class="col-md-10">
+              <span *ngIf="order.variantDetails">{{ order.variantDetails?.salePrice | currency: 'ZMW ' }}</span>
+              <span *ngIf="!order.variantDetails && order.productDetails">{{
+                order.productDetails?.salePrice | currency: 'ZMW '
+              }}</span>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Short Description:
+            </div>
+            <div class="col-md-10">
+              {{ order?.productDetails?.shortDescription }}
+            </div>
+          </div>
+        </li>
+      </ul>
+      <br />
+      <h3>Shipping-Picking details</h3>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Name:
+            </div>
+            <div class="col-md-10">{{ order?.firstName }} {{ order?.lastName }}</div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Email:
+            </div>
+            <div class="col-md-4">
+              {{ order?.email }}
+            </div>
+            <div class="col-md-2">
+              Phone Number:
+            </div>
+            <div class="col-md-4">
+              {{ order?.phoneNumber }}
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Country:
+            </div>
+            <div class="col-md-10">
+              {{ order?.country }}
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              City:
+            </div>
+            <div class="col-md-10">
+              {{ order?.city }}
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Area:
+            </div>
+            <div class="col-md-10">
+              {{ order?.state }}
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item" *ngIf="!order.deliveryCompanyInfo">
+          <div class="row">
+            <div class="col-md-2">
+              Pick Up By:
+            </div>
+            <div class="col-md-10">
+              <p>{{ order?.userPickUpInfo?.pickUpBy }}</p>
+              <p
+                *ngIf="order.userPickUpInfo && order.userPickUpInfo.pickUpBy === 'others' && order.userPickUpInfo.name"
+              >
+                Name:
+                {{ order?.userPickUpInfo?.name }}
+              </p>
+              <p
+                *ngIf="
+                  order.userPickUpInfo && order.userPickUpInfo.pickUpBy === 'others' && order.userPickUpInfo.idNumber
+                "
+              >
+                ID:
+                {{ order?.userPickUpInfo?.idNumber }}
+              </p>
+              <p
+                *ngIf="
+                  order.userPickUpInfo && order.userPickUpInfo.pickUpBy === 'others' && order.userPickUpInfo.phoneNumber
+                "
+              >
+                Address:
+                {{ order?.userPickUpInfo?.phoneNumber }}
+              </p>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item" *ngIf="order.deliveryCompanyInfo">
+          <div class="row">
+            <div class="col-md-2">
+              Delivery Company:
+            </div>
+            <div class="col-md-10">
+              <strong>{{ order?.deliveryCompanyInfo?.name }}</strong>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item" *ngIf="order.deliveryCompanyInfo">
+          <div class="row">
+            <div class="col-md-2">
+              Delivery Status:
+            </div>
+            <div class="col-md-4">
+              <span class="badge badge-warning">{{ order?.deliveryStatus }}</span
+              >&nbsp; at: 1/9/19, 11:57 AM
+            </div>
+            <div class="col-md-3">
+              <button
+                class="btn btn-warning"
+                (click)="openMap(order)"
+                [disabled]="
+                  (order.status === 'completed' || order.status === 'refunded' || order.status === 'cancelled') &&
+                  (order.deliveryStatus === 'deliveried' ||
+                    order.deliveryStatus === 'cancelled' ||
+                    order.deliveryStatus === 'postponed')
+                "
+              >
+                Position Driver
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button
+                *ngIf="order.deliveryHistory.length > 0"
+                class="btn btn-warning btn-order"
+                (click)="openHistoryStatus(order)"
+                translate
+              >
+                Delivery History
+              </button>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-2">
+              Pick Up Address
+              <span *ngIf="!order.deliveryCompanyInfo"> for user:</span>
+              <span *ngIf="order.deliveryCompanyInfo"> for driver:</span>
+            </div>
+            <div class="col-md-10">
+              {{ order?.pickUpAddressToString }}
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item" *ngIf="order.paymentMethod === 'cod'">
+          <div class="row">
+            <div class="col-md-2">
+              Google Pin:
+            </div>
+            <div class="col-md-10">
+              <a href="{{ order?.zipCode }}" target="_blank">{{ order?.zipCode }}</a>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-12">
+              User Note:
+              <p class="line-text">{{ order?.userNote }}</p>
+            </div>
+          </div>
+        </li>
+        <!-- <li class="list-group-item">
+                    <div class="row">
+                      <div class="col-md-2">
+                        Shipping Type (*):
+                      </div>
+                      <div class="col-md-4">
+                        <input required type="text" class="form-control" placeholder="Enter shipping type" [(ngModel)]="order.shippingMethod"
+                          name="shippingMethod" #shippingMethod="ngModel" />
+                        <div *ngIf="shippingMethod.errors && (shippingMethod.dirty || shippingMethod.touched || isSubmitted)">
+                          <p [hidden]="!shippingMethod.errors.required" class="required-text">
+                            Please enter shipping method!
+                          </p>
+                        </div>
+                      </div>
+                      <div class="col-md-2">
+                        Code (*):
+                      </div>
+                      <div class="col-md-4">
+                        <input required type="text" class="form-control" placeholder="Enter shipping code" [(ngModel)]="order.shippingCode"
+                          name="shippingCode" #shippingCode="ngModel" />
+                        <div *ngIf="shippingCode.errors && (shippingCode.dirty || shippingCode.touched || isSubmitted)">
+                          <p [hidden]="!shippingCode.errors.required" class="required-text">
+                            Please enter shipping code!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </li> -->
+      </ul>
+      <br />
+      <!-- <button class="btn btn-success" type="submit">Update Shipping</button>&nbsp; -->
+      <a class="btn btn-warning" [routerLink]="['/orders/list']">Cancel</a>
+    </div>
+  </div>
+</div>
+<!-- </form> -->

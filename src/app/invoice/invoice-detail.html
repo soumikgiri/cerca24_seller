@@ -1,0 +1,148 @@
+<div class="container">
+  <div class="invoice-form">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="invoice-title">
+          <h3><span translate>Invoice</span> #{{ order?.trackingCode }}</h3>
+          <img [src]="appConfig.siteLogo" *ngIf="appConfig?.siteLogo" width="150px" class="pull-right" />
+        </div>
+        <hr />
+        <div class="row">
+          <div class="col-sm-6">
+            <address>
+              <strong><span translate>Billed To</span>: {{ order?.firstName }} {{ order?.lastName }}</strong>
+              <div><i class="fa fa-phone"></i> {{ order?.phoneNumber }}</div>
+              <div><i class="fa fa-envelope"></i> {{ order?.email }}<br /></div>
+              <div>
+                <i class="fa fa-map-marker"></i>
+                <span> {{ order?.streetAddress }}</span>
+                <span *ngIf="order.state">, </span>
+                <span>{{ order?.state }}</span>
+                <span *ngIf="order.city">, </span>
+                <span>{{ order?.city }}</span>
+                <span>, {{ order?.country }}</span>
+              </div>
+            </address>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <address>
+              <strong
+                >Payment Method:
+                <!-- <span *ngIf="order.paymentMethod === 'cybersource'" class="badge badge-warning">Cyber Source CC</span>
+                    <span *ngIf="order.paymentMethod !== 'cybersource'" class="text-uppercase">{{order?.paymentMethod}}</span> -->
+                <span class="text-uppercase">{{ order?.paymentMethod }}</span>
+              </strong>
+              <br />
+              <strong
+                ><span translate>Payment Status</span>:
+                <span class="badge badge-success"> {{ order?.paymentStatus }}</span></strong
+              ><br />
+              <strong><span translate>Transaction ID</span>: {{ order?.transactionId }}</strong>
+            </address>
+          </div>
+          <div class="col-sm-6 text-right">
+            <address>
+              <strong>Order Date: {{ order?.createdAt | date: 'short' }}</strong
+              ><br />
+              <strong>Total Price: {{ order?.totalPrice | currency: 'ZMW ' }}</strong>
+            </address>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <h4>
+              Shop <strong>{{ order?.shopDetail?.name }}</strong>
+            </h4>
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr class="thead-invoice">
+                    <td translate>Product</td>
+                    <td translate>Variant</td>
+                    <td class="text-center" translate>Unit Price</td>
+                    <td class="text-center" translate>Tax</td>
+                    <td class="text-center" translate>Quantity</td>
+                    <td class="text-center" translate>Total</td>
+                    <td class="text-center" translate>Status</td>
+                    <td translate>Pick Up Address</td>
+                    <td tranlaste>Pick Up By</td>
+                    <td tranlate>Note</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="no-wrap">
+                      {{ order?.productDetails?.name }}<br />
+                      <span class="badge badge-info">{{ order?.productDetails?.type }}</span>
+                    </td>
+                    <td class="text-center">
+                      <p *ngIf="order.variantDetails">
+                        <span *ngFor="let option of order.variantDetails.options" class="no-wrap">
+                          {{ option.displayText || option.optionKey }}: {{ option.value }}
+                        </span>
+                      </p>
+                    </td>
+                    <td class="text-center no-wrap">
+                      {{ order?.productPrice | currency: 'ZMW ' }}
+                    </td>
+                    <td class="text-center no-wrap">
+                      {{ order?.taxPrice | currency: 'ZMW ' }}
+                    </td>
+                    <td class="text-right">{{ order?.quantity }}</td>
+                    <td class="text-center no-wrap">{{ order?.totalPrice | currency: 'ZMW ' }}</td>
+                    <td>
+                      <status-display [status]="order.status"></status-display>
+                    </td>
+                    <td class="no-wrap">{{ order?.pickUpAddress }}</td>
+                    <td class="no-wrap">
+                      <p>
+                        <span class="badge badge-success">{{ order?.userPickUpInfo?.pickUpBy }}</span>
+                      </p>
+                      <p
+                        *ngIf="
+                          order.userPickUpInfo &&
+                          order.userPickUpInfo.pickUpBy === 'others' &&
+                          order.userPickUpInfo.name
+                        "
+                      >
+                        <span translate>Name</span>: {{ order?.userPickUpInfo?.name }}
+                      </p>
+                      <p
+                        *ngIf="
+                          order.userPickUpInfo &&
+                          order.userPickUpInfo.pickUpBy === 'others' &&
+                          order.userPickUpInfo.idNumber
+                        "
+                      >
+                        <span translate>ID</span>: {{ order?.userPickUpInfo?.idNumber }}
+                      </p>
+                      <p
+                        *ngIf="
+                          order.userPickUpInfo &&
+                          order.userPickUpInfo.pickUpBy === 'others' &&
+                          order.userPickUpInfo.phoneNumber
+                        "
+                      >
+                        <span translate>Mobile</span>: {{ order?.userPickUpInfo?.phoneNumber }}
+                      </p>
+                    </td>
+                    <td>
+                      {{ order?.userNote }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
